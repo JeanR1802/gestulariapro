@@ -3,8 +3,6 @@ import { prisma } from '../../../lib/prisma'
 import TiendaClient from './TiendaClient'
 import { Store } from '../../../types'
 
-// --- CORRECCIÓN: Eliminamos la interfaz 'Props' de aquí ---
-
 async function getTienda(slug: string) {
   try {
     const storeFromDb = await prisma.store.findUnique({
@@ -41,7 +39,7 @@ async function getTienda(slug: string) {
   }
 }
 
-// --- CORRECCIÓN: Definimos el tipo de los parámetros directamente aquí ---
+// Aquí definimos el tipo de los parámetros directamente en la función
 export default async function TiendaPage({ params }: { params: { slug: string } }) {
   const store = await getTienda(params.slug)
 
@@ -52,7 +50,7 @@ export default async function TiendaPage({ params }: { params: { slug: string } 
   return <TiendaClient store={store as Store} />
 }
 
-// --- CORRECIÓN: También actualizamos la firma de esta función ---
+// Hacemos lo mismo en la función de metadata
 export async function generateMetadata({ params }: { params: { slug: string } }) {
     const store = await getTienda(params.slug)
     if (!store) {
