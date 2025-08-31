@@ -1,21 +1,18 @@
-// src/app/api/products/[id]/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/auth';
 import { prisma } from '../../../../lib/prisma';
 
-// --- ¡NUEVA FUNCIÓN GET PARA OBTENER UN SOLO PRODUCTO! ---
+// --- FUNCIÓN GET CORREGIDA ---
 export async function GET(
-    request: Request,
-    { params }: { params: { id: string } }
+    request: NextRequest,
+    context: { params: { id: string } }
 ) {
     try {
-        const session = await getServerSession(authOptions);
-        const productId = params.id;
-
-        if (!session?.user?.email) {
-            return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
-        }
+        // No se necesita sesión para ver un producto, pero sí para verificar permisos si fuera necesario.
+        // Por ahora, lo mantenemos simple.
+        const resolvedParams = await context.params;
+        const productId = resolvedParams.id;
         
         const product = await prisma.product.findUnique({
             where: { id: productId },
@@ -33,15 +30,15 @@ export async function GET(
     }
 }
 
-
-// --- ¡NUEVA FUNCIÓN PUT PARA ACTUALIZAR UN PRODUCTO! ---
+// --- FUNCIÓN PUT CORREGIDA ---
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const productId = params.id;
+    const resolvedParams = await context.params;
+    const productId = resolvedParams.id;
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
@@ -72,13 +69,7 @@ export async function PUT(
     
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
-      data: {
-        name,
-        description,
-        price,
-        image,
-        isActive,
-      },
+      data: { name, description, price, image, isActive },
     });
 
     return NextResponse.json({ message: 'Producto actualizado exitosamente', product: updatedProduct });
@@ -89,15 +80,15 @@ export async function PUT(
   }
 }
 
-
-// --- LA FUNCIÓN DELETE QUE YA TENÍAMOS ---
+// --- FUNCIÓN DELETE CORREGIDA ---
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const productId = params.id;
+    const resolvedParams = await context.params;
+    const productId = resolvedParams.id;
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
@@ -113,7 +104,7 @@ export async function DELETE(
     }
 
     const product = await prisma.product.findFirst({
-        where: { id: productId, storeId: user.store.id, }
+        where: { id: productId, storeId: user.store.id }
     });
 
     if (!product) {
