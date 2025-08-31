@@ -9,8 +9,7 @@ export async function GET(
     context: { params: { id: string } }
 ) {
     try {
-        // No se necesita sesión para ver un producto, pero sí para verificar permisos si fuera necesario.
-        // Por ahora, lo mantenemos simple.
+        // Corregimos el manejo de params
         const resolvedParams = await context.params;
         const productId = resolvedParams.id;
         
