@@ -3,11 +3,15 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import Link from 'next/link' // Importamos el componente Link
+import Link from 'next/link'
 
-interface Order { // Añadimos un tipo más específico para el pedido
+// --- CORRECCIÓN AQUÍ: Definimos tipos específicos ---
+interface Product {
+  id: string; // Solo necesitamos el id para el conteo por ahora
+}
+
+interface Order {
   total: number;
-  // Podríamos añadir el status si quisiéramos filtrar por pedidos completados
 }
 
 interface Store {
@@ -16,8 +20,8 @@ interface Store {
   slug: string
   description: string | null
   primaryColor: string
-  products: any[]
-  orders: Order[] // Usamos el tipo Order
+  products: Product[] // Usamos el tipo Product[] en lugar de any[]
+  orders: Order[]   // Usamos el tipo Order[] en lugar de any[]
 }
 
 export default function DashboardPage() {
@@ -49,7 +53,6 @@ export default function DashboardPage() {
     }
   }, [session])
   
-  // Pequeña función para calcular el total de ventas
   const totalSales = store?.orders?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
 
   if (status === 'loading' || isLoading) {
@@ -88,23 +91,23 @@ export default function DashboardPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            {/* Sección de Tienda */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 flex flex-col">
               <h3 className="font-semibold text-blue-900 mb-2">🏪 Tu Tienda</h3>
               {store ? (
                 <div className="flex flex-col flex-grow justify-between">
                   <div>
                     <p className="text-blue-700 font-medium mb-2">{store.name}</p>
-                    <p className="text-blue-600 text-sm mb-4">
-                     {store.slug}.localhost:3000
+                    <p className="text-blue-600 text-sm mb-4 break-words">
+                      gestularia.com/tienda/{store.slug}
                     </p>
                   </div>
                   <div className="space-y-2 mt-auto">
                     <button
-                    onClick={() => window.open(`https://${store.slug}.localhost:3000`, '_blank')}
-                    className="w-full bg-green-600 text-white px-4 py-2 rounded font-medium hover:bg-green-700">
-                     Ver mi Tienda 👁️
-                   </button>
+                      onClick={() => window.open(`/tienda/${store.slug}`, '_blank')}
+                      className="w-full bg-green-600 text-white px-4 py-2 rounded font-medium hover:bg-green-700"
+                    >
+                      Ver mi Tienda 👁️
+                    </button>
                     <button
                       onClick={() => router.push('/dashboard/productos')}
                       className="w-full bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700"
@@ -126,20 +129,24 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* --- MODIFICACIÓN: Sección de Ventas ahora es un Link --- */}
             <Link href="/dashboard/ventas" className="block bg-green-50 border border-green-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer">
               <h3 className="font-semibold text-green-900 mb-2">💰 Ventas</h3>
               <p className="text-2xl font-bold text-green-800">${totalSales.toFixed(2)}</p>
               <p className="text-green-700 text-sm">Total histórico</p>
             </Link>
 
-            {/* --- MODIFICACIÓN: Sección de Pedidos ahora es un Link --- */}
             <Link href="/dashboard/pedidos" className="block bg-purple-50 border border-purple-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer">
               <h3 className="font-semibold text-purple-900 mb-2">📦 Pedidos</h3>
               <p className="text-2xl font-bold text-purple-800">
                 {store?.orders?.length || 0}
               </p>
               <p className="text-purple-700 text-sm">Total recibidos</p>
+            </Link>
+            
+            <Link href="/dashboard/contenido" className="block bg-yellow-50 border border-yellow-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer">
+              <h3 className="font-semibold text-yellow-900 mb-2">✍️ Generador de Contenido</h3>
+              <p className="text-yellow-800 text-2xl font-bold">Ideas</p>
+              <p className="text-yellow-700 text-sm">Supera el bloqueo creativo</p>
             </Link>
 
           </div>
