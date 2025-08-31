@@ -1,4 +1,3 @@
-// FILE: src/app/tienda/[slug]/page.tsx
 import { notFound } from 'next/navigation'
 import { prisma } from '../../../lib/prisma'
 import TiendaClient from './TiendaClient'
@@ -39,7 +38,7 @@ async function getTienda(slug: string) {
   }
 }
 
-// ✅ Define tu propio tipo en vez de PageProps
+// ✅ Tu propio tipo, sin PageProps
 type TiendaPageProps = {
   params: {
     slug: string
