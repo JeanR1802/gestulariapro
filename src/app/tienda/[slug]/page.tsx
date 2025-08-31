@@ -1,3 +1,4 @@
+// FILE: src/app/tienda/[slug]/page.tsx
 import { notFound } from 'next/navigation'
 import { prisma } from '../../../lib/prisma'
 import TiendaClient from './TiendaClient'
@@ -21,26 +22,31 @@ async function getTienda(slug: string) {
       },
     })
 
-    if (!storeFromDb) return null;
+    if (!storeFromDb) return null
 
     const sanitizedProducts = storeFromDb.products.map(product => ({
       ...product,
       price: Number(product.price),
-    }));
+    }))
     
     return {
-        ...storeFromDb,
-        products: sanitizedProducts,
-    };
-
+      ...storeFromDb,
+      products: sanitizedProducts,
+    }
   } catch (error) {
     console.error('Error al cargar tienda:', error)
     return null
   }
 }
 
-// Aquí definimos el tipo de los parámetros directamente en la función
-export default async function TiendaPage({ params }: { params: { slug: string } }) {
+// ✅ Definimos un tipo reutilizable
+interface PageProps {
+  params: {
+    slug: string
+  }
+}
+
+export default async function TiendaPage({ params }: PageProps) {
   const store = await getTienda(params.slug)
 
   if (!store || !store.isActive) {
@@ -50,16 +56,17 @@ export default async function TiendaPage({ params }: { params: { slug: string } 
   return <TiendaClient store={store as Store} />
 }
 
-// Hacemos lo mismo en la función de metadata
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-    const store = await getTienda(params.slug)
-    if (!store) {
-        return {
-            title: 'Tienda no encontrada - Gestularia',
-        }
-    }
+export async function generateMetadata({ params }: PageProps) {
+  const store = await getTienda(params.slug)
+
+  if (!store) {
     return {
-        title: `${store.name} - Tienda Digital`,
-        description: store.description || `Conoce los productos de ${store.name}`,
+      title: 'Tienda no encontrada - Gestularia',
     }
+  }
+
+  return {
+    title: `${store.name} - Tienda Digital`,
+    description: store.description || `Conoce los productos de ${store.name}`,
+  }
 }
