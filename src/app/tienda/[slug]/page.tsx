@@ -39,14 +39,14 @@ async function getTienda(slug: string) {
   }
 }
 
-// ✅ Definimos un tipo reutilizable
-interface PageProps {
+// ✅ Define tu propio tipo en vez de PageProps
+type TiendaPageProps = {
   params: {
     slug: string
   }
 }
 
-export default async function TiendaPage({ params }: PageProps) {
+export default async function TiendaPage({ params }: TiendaPageProps) {
   const store = await getTienda(params.slug)
 
   if (!store || !store.isActive) {
@@ -56,7 +56,7 @@ export default async function TiendaPage({ params }: PageProps) {
   return <TiendaClient store={store as Store} />
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params }: TiendaPageProps) {
   const store = await getTienda(params.slug)
 
   if (!store) {
