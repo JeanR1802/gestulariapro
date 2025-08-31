@@ -3,11 +3,7 @@ import { prisma } from '../../../lib/prisma'
 import TiendaClient from './TiendaClient'
 import { Store } from '../../../types'
 
-interface Props {
-  params: {
-    slug: string
-  }
-}
+// --- CORRECCIÓN: Eliminamos la interfaz 'Props' de aquí ---
 
 async function getTienda(slug: string) {
   try {
@@ -29,7 +25,6 @@ async function getTienda(slug: string) {
 
     if (!storeFromDb) return null;
 
-    // Convertimos los precios de Decimal a number para el componente cliente
     const sanitizedProducts = storeFromDb.products.map(product => ({
       ...product,
       price: Number(product.price),
@@ -46,21 +41,19 @@ async function getTienda(slug: string) {
   }
 }
 
-// --- LÍNEA CLAVE ---
-// Asegúrate de que esta línea contenga "export default"
-export default async function TiendaPage({ params }: Props) {
+// --- CORRECCIÓN: Definimos el tipo de los parámetros directamente aquí ---
+export default async function TiendaPage({ params }: { params: { slug: string } }) {
   const store = await getTienda(params.slug)
 
   if (!store || !store.isActive) {
     notFound()
   }
 
-  // Asegúrate de que estás devolviendo el componente cliente aquí
   return <TiendaClient store={store as Store} />
 }
 
-// Esta es una exportación nombrada y está bien que coexista
-export async function generateMetadata({ params }: Props) {
+// --- CORRECIÓN: También actualizamos la firma de esta función ---
+export async function generateMetadata({ params }: { params: { slug: string } }) {
     const store = await getTienda(params.slug)
     if (!store) {
         return {
