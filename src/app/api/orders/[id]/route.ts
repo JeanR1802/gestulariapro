@@ -1,59 +1,58 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../../lib/auth';
-import { prisma } from '../../../../lib/prisma';
-import { OrderStatus } from '@prisma/client';
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../../../../lib/auth'
+import { prisma } from '../../../../lib/prisma'
 
+// PATCH - Actualizar estado de pedido
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> | { id: string } } // Actualizamos el tipo para reflejar la realidad
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const { id } = await params // Hacer await de params
+    const session = await getServerSession(authOptions)
     
-    // --- CAMBIO DEFINITIVO: Usamos 'await' para resolver la promesa de los params ---
-    const resolvedParams = await context.params;
-    const orderId = resolvedParams.id;
-
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 
-    const { status } = await request.json();
+    const { status } = await request.json()
 
-    if (!status || !Object.values(OrderStatus).includes(status)) {
-        return NextResponse.json({ error: 'El estado proporcionado no es válido.' }, { status: 400 });
+    if (!status || !['PENDING', 'CONFIRMED', 'DELIVERED', 'CANCELLED'].includes(status)) {
+      return NextResponse.json({ error: 'Estado inválido' }, { status: 400 })
     }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { store: { select: { id: true } } },
-    });
+      include: { store: true }
+    })
 
     if (!user?.store) {
-      return NextResponse.json({ error: 'Tienda no encontrada' }, { status: 404 });
-    }
-
-    const orderToUpdate = await prisma.order.findFirst({
-        where: {
-            id: orderId,
-            storeId: user.store.id,
-        }
-    });
-
-    if (!orderToUpdate) {
-        return NextResponse.json({ error: 'Pedido no encontrado o no tienes permiso para modificarlo' }, { status: 404 });
+      return NextResponse.json({ error: 'No tienes una tienda' }, { status: 400 })
     }
 
     const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
-      data: { status: status },
-    });
+      where: { 
+        id,
+        storeId: user.store.id 
+      },
+      data: { status },
+      include: {
+        items: {
+          include: {
+            product: true
+          }
+        }
+      }
+    })
 
-    return NextResponse.json({ message: 'Estado del pedido actualizado', order: updatedOrder });
+    return NextResponse.json({
+      message: 'Pedido actualizado exitosamente',
+      order: updatedOrder
+    })
 
   } catch (error) {
-    console.error('Error al actualizar el pedido:', error);
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+    console.error('Error al actualizar pedido:', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

@@ -3,9 +3,7 @@ import { prisma } from '../../../lib/prisma'
 import TiendaClient from './TiendaClient'
 
 interface Props {
-  params: {
-    slug: string
-  }
+  params: Promise<{ slug: string }> // Cambiar a Promise
 }
 
 async function getTienda(slug: string) {
@@ -34,7 +32,8 @@ async function getTienda(slug: string) {
 }
 
 export default async function TiendaPage({ params }: Props) {
-  const store = await getTienda(params.slug)
+  const { slug } = await params // Hacer await de params
+  const store = await getTienda(slug)
 
   if (!store || !store.isActive) {
     notFound()
@@ -45,7 +44,8 @@ export default async function TiendaPage({ params }: Props) {
 
 // Generar metadata dinámicamente
 export async function generateMetadata({ params }: Props) {
-  const store = await getTienda(params.slug)
+  const { slug } = await params // Hacer await de params
+  const store = await getTienda(slug)
   
   if (!store) {
     return {
