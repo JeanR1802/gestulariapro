@@ -2,36 +2,17 @@
 'use client'
 
 import { useState } from 'react'
-
-// Definimos los tipos para que el código sea más claro y robusto
-interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number; // Asegurémonos que el tipo sea number
-  image: string | null;
-  isActive: boolean;
-}
-
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  primaryColor: string;
-  backgroundColor: string;
-  products: Product[];
-  user: {
-    name: string | null;
-    email: string;
-  };
-}
+// --- CORRECCIÓN: Importamos los tipos desde nuestro archivo central ---
+import { Store } from '../../../types'
 
 interface Props {
   store: Store;
 }
 
+// Ya no necesitamos definir las interfaces 'Product' y 'Store' aquí
+
 export default function TiendaClient({ store }: Props) {
+  // El resto del código del componente se mantiene exactamente igual...
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [orderData, setOrderData] = useState({
@@ -41,11 +22,9 @@ export default function TiendaClient({ store }: Props) {
     notes: '',
   });
 
-  // Estados para el envío del formulario
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-
 
   const addToCart = (productId: string) => {
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
@@ -74,7 +53,6 @@ export default function TiendaClient({ store }: Props) {
     return Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
   };
   
-  // --- ¡NUEVA FUNCIÓN PARA ENVIAR EL PEDIDO! ---
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -103,15 +81,14 @@ export default function TiendaClient({ store }: Props) {
         }
 
         setSubmitSuccess(true);
-        setCart({}); // Limpiar el carrito
-        // Dejamos el modal abierto para mostrar el mensaje de éxito
+        setCart({});
     } catch (err) {
         setSubmitError(err instanceof Error ? err.message : 'Error desconocido.');
     } finally {
         setIsSubmitting(false);
     }
   };
-
+  
   const closeModal = () => {
     setShowOrderForm(false);
     setSubmitSuccess(false);
@@ -119,9 +96,9 @@ export default function TiendaClient({ store }: Props) {
     setOrderData({ customerName: '', customerEmail: '', customerPhone: '', notes: '' });
   }
 
+  // El resto del JSX se mantiene igual
   return (
     <div className="min-h-screen" style={{ backgroundColor: store.backgroundColor }}>
-      {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="text-center">
@@ -134,10 +111,7 @@ export default function TiendaClient({ store }: Props) {
           </div>
         </div>
       </div>
-
-      {/* Contenido Principal */}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Carrito Flotante */}
         {getCartItemsCount() > 0 && !showOrderForm && (
           <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 border-l-4" style={{ borderColor: store.primaryColor }}>
             <div className="flex items-center justify-between mb-2">
@@ -154,8 +128,6 @@ export default function TiendaClient({ store }: Props) {
             </button>
           </div>
         )}
-        
-        {/* Productos */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Nuestros Productos</h2>
           {store.products.length === 0 ? (
@@ -193,8 +165,6 @@ export default function TiendaClient({ store }: Props) {
           )}
         </div>
       </div>
-      
-      {/* Modal de Pedido */}
       {showOrderForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -203,7 +173,6 @@ export default function TiendaClient({ store }: Props) {
                         <h3 className="text-xl font-semibold">Completar Pedido</h3>
                         <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">&times;</button>
                     </div>
-
                     {submitSuccess ? (
                         <div className="text-center py-8">
                             <h4 className="text-2xl font-bold text-green-600 mb-2">¡Pedido enviado!</h4>
@@ -214,7 +183,6 @@ export default function TiendaClient({ store }: Props) {
                         </div>
                     ) : (
                         <>
-                            {/* Resumen del Pedido */}
                             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                                 <h4 className="font-semibold mb-3">Tu pedido:</h4>
                                 {Object.entries(cart).map(([productId, quantity]) => {
@@ -232,8 +200,6 @@ export default function TiendaClient({ store }: Props) {
                                     <span>${getCartTotal().toFixed(2)}</span>
                                 </div>
                             </div>
-
-                            {/* Formulario */}
                             <form onSubmit={handleSubmitOrder} className="space-y-4">
                                 <div>
                                     <label className="block text-gray-700 font-medium mb-1">Nombre completo *</label>
